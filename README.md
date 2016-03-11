@@ -1,6 +1,7 @@
-This document is a guide to achieve scoring with Spark through a practical case. Inspired from a R tutorial [here](http://rstudio-pubs-static.s3.amazonaws.com/5267_0156db47a0604aa9818143e7d2db226e.html).
+# Scoring Heart Diseases with Apache Spark
+
+This document is a guide to achieve scoring with Apache Spark through a practical case. Inspired from a R tutorial [here](http://rstudio-pubs-static.s3.amazonaws.com/5267_0156db47a0604aa9818143e7d2db226e.html).
 It is not on the mathematical aspects of the construction of a score but rather encourages the use of Spark and exploitation of results. It is divided into four parts:
-<br>
 
 1. Objective description of the study and data
 2. Data preparation and initial analysis
@@ -87,7 +88,7 @@ val encodeFamHist = udf[Double, String]{ _ match { case "Absent" => 0.0 case "Pr
 // Apply UDF and cast on data
 val data = rawData.withColumn("famhist",encodeFamHist('famhist)).withColumn("chd",'chd.cast("Double"))
 ```
-## Categorical feature encoder
+### Categorical feature encoder
 
 ```scala
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
