@@ -17,7 +17,6 @@ Scoring is a technique for prioritizing data for assessing a rating or score the
 The score is usually obtained from the quantitative and qualitative data available on the individual (socio-demo data, purchasing behavior, previous answers ...) to which are applied a scoring model.
 
 In general, the modeling technique used is the logistic regression. it is one of supervised learning techniques, i.e that one wishes to explain in general belonging to a category from descriptors collected on a population sample in order to generalize learning.
-<br>
 
 Some examples of applications:
 
