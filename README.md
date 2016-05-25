@@ -22,11 +22,62 @@ In general, the modeling technique used is the logistic regression. it is one of
 Some examples of applications:
 
 - Determine the viability of a client seeking a credit from its characteristics (age, type of job, income level, other outstanding loans, etc.)
-- For a company determine the best type of planting area based on neighborhood characteristics (SPC, Number of inhabitants, Life Cycle, etc.)
+- For a company, determine the best type of planting area based on neighborhood characteristics (SPC, Number of inhabitants, Life Cycle, etc.)
 
-### Prepare Raw Data
+### Case Study
 
-Let's first load the needed libraries. We are working with Zeppelin Notebook (v.0.6.0) :
+We are interested in our case study in a database containing data about 462 patients for whom we want to predict exposure to a heart attack.
+
+The data is available [here](http://statweb.stanford.edu/~tibs/ElemStatLearn/) under the tab Data > South African Heart Disease.
+
+#### Data Description
+
+A retrospective sample of males in a heart-disease high-risk region of the Western Cape, South Africa. There are roughly two controls per case of CHD. Many of the CHD positive men have undergone blood pressure reduction treatment and other programs to reduce their risk
+factors after their CHD event. In some cases the measurements were made after these treatments. These data are taken from a larger dataset, described in  Rousseauw et al, 1983, South African Medical Journal.
+
+| variable | description
+|-----| ----- |
+| sbp	|	systolic blood pressure |
+| tobacco	|	cumulative tobacco (kg) |
+| ldl |	low densiity lipoprotein cholesterol |
+| adiposity | |
+| famhist	|	family history of heart disease (Present, Absent) |
+| typea	|	type-A behavior |
+| obesity | |
+| alcohol	|	current alcohol consumption |
+| age	|	age at onset |
+| chd	|	response, coronary heart disease |
+
+For our study case, we will be interested in that last variable `chd`.
+
+### Model Definition
+
+We aim to determine the probability of a given heart disease observations on 462 patients such as chd = f (obesity, age, family history, etc ...)
+
+> ***Yes, that not big data, why do we need spark for that ?*** *We can use R or Pandas.*
+
+> *Well the whole point is actually to define this analytical gait on Spark and Zeppelin which can be also carried to use over big data.*
+
+So back to our example ! This example illustrates  how to use logistic regression on health data. The problem formulation is generally the same, it can be for an insurance company to determine the risk factors to provision (pricing) determine the profiles of palatable customers a new commercial offer, and also in macroeconomics, this approach is used to quantify country risk.
+
+#### Modeling approach
+
+Like any good modeling approach, building a good scoring model is a succession of more or less basic steps based practitioners. Nevertheless they all agree more or less to respect the following:
+
+- Exploratory Analysis: What is the data set? Are there any missing values?
+- Check the correlation between the descriptors and the variable.
+- Identify important and redundant predictors to create a parsimonious model (this step is very important when you want to make forecasts).
+- Estimate the model on a training sample.
+- Validate the model on a test sample and build the model based on quality indicators.
+- Compare different models and retaining the most suitable model according to the purpose of the study.
+
+We will follow these steps and solve the problem of our case study.
+
+#### Load Raw Data
+
+Let's first load the needed libraries. We are working with Zeppelin Notebook (v.0.6.0). We will need the `spark-csv` package to read the downloaded data into a Spark `DataFrame`.
+
+In Zeppelin, we edit the first cell adding the following lines to load the dependency.
 
 ```scala
 %dep
@@ -34,11 +85,19 @@ Let's first load the needed libraries. We are working with Zeppelin Notebook (v.
 z.load("com.databricks:spark-csv_2.11:1.3.0")
 ```
 
-We'll need to read the data raw first using `spark-csv` :
+In a separate cell, we'll need to read the data raw first using `spark-csv` as followed :
 
 ```scala
+// I believe that you are old enough to know where you've put your downloaded
+// data and thus change to the according path
 val dataPath = "/home/eliasah/Desktop/r-snippets/heart-disease-study/data/SAheart.data.txt"
 val rawData = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").load(dataPath).drop("row.names")
+```
+
+We can now check what our data looks like. Let's check the content of the data.
+
+```scala
+
 rawData.show
 
 // +---+-------+-----+---------+-------+-----+-------+-------+---+---+
@@ -65,39 +124,62 @@ rawData.show
 // |158|    2.6| 7.46|    34.07|Present|   61|   29.3|  53.28| 62|  1|
 // |124|   14.0| 6.23|    35.96|Present|   45|  30.09|    0.0| 59|  1|
 // +---+-------+-----+---------+-------+-----+-------+-------+---+---+
-
-rawData.describe().show()
-
-// +-------+------------------+-----------------+-----------------+------------------+------------------+------------------+------------------+------------------+------------------+
-// |summary|               sbp|          tobacco|              ldl|         adiposity|             typea|           obesity|           alcohol|               age|               chd|
-// +-------+------------------+-----------------+-----------------+------------------+------------------+------------------+------------------+------------------+------------------+
-// |  count|               462|              462|              462|               462|               462|               462|               462|               462|               462|
-// |   mean|138.32683982683983| 3.63564935064935|4.740324675324673|25.406731601731614|53.103896103896105|26.044112554112548|17.044393939393945|42.816017316017316|0.3463203463203463|
-// | stddev|20.496317175467627|4.593024078404592|2.070909161059325| 7.780698595839762| 9.817534115584072| 4.213680226897767|24.481058691658575|14.608956444552494|0.4763125365907826|
-// |    min|               101|              0.0|             0.98|              6.74|                13|              14.7|               0.0|                15|                 0|
-// |    max|               218|             31.2|            15.33|             42.49|                78|             46.58|            147.19|                64|                 1|
-// +-------+------------------+-----------------+-----------------+------------------+------------------+------------------+------------------+------------------+------------------+
 ```
 
-We will notice that we have a categorical feature `famhist` for family history. Thus, we'll be needed to encode it for further usage. We will also need to convert the `chd` feature into a `DoubleType`:
+or with `z.show(rawData)` :
+
+![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawData.png)
+
+#### Exploratory Analysis
+
+Hence the data is already loaded, we can check the type of each columns by printing the schema :
+
+```scala
+rawData.printSchema
+// root
+//  |-- sbp: integer (nullable = true)
+//  |-- tobacco: double (nullable = true)
+//  |-- ldl: double (nullable = true)
+//  |-- adiposity: double (nullable = true)
+//  |-- famhist: string (nullable = true)
+//  |-- typea: integer (nullable = true)
+//  |-- obesity: double (nullable = true)
+//  |-- alcohol: double (nullable = true)
+//  |-- age: integer (nullable = true)
+//  |-- chd: integer (nullable = true)
+```
+
+Note that the chd target variable was treated as a numeric variable. We will deal with that later on.
+
+Let's run some summary statistics on the data (e.g `z.show(rawData.describe())`):
+
+![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawDataSummary.png)
+
+#### Categorical feature encoder
+
+We will also notice that we have a categorical feature `famhist` for family history. Thus, we'll need to encode it for further usage. We will also need to convert the `chd` feature into a `DoubleType` before converting it into a categorical feature:
 
 ```scala
 // famhist UDF encoder
-val encodeFamHist = udf[Double, String]{ _ match { case "Absent" => 0.0 case "Present" => 1.0} }
+val encodeFamHist = udf[Double, String]{
+  _ match { case "Absent" => 0.0 case "Present" => 1.0}
+}
 
 // Apply UDF and cast on data
-val data = rawData.withColumn("famhist",encodeFamHist('famhist)).withColumn("chd",'chd.cast("Double"))
+val data = rawData
+              .withColumn("famhist",encodeFamHist('famhist))
+              .withColumn("chd",'chd.cast("Double"))
 ```
-### Categorical feature encoder
 
 ```scala
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.ml.feature.OneHotEncoder
 
 val toVec = udf[Vector, Double] { (a) =>  Vectors.dense(a) }
 
-import org.apache.spark.ml.feature.OneHotEncoder
-
-val encoder = new OneHotEncoder().setInputCol("chd").setOutputCol("chd_categorical")
+val encoder = new OneHotEncoder()
+                   .setInputCol("chd")
+                   .setOutputCol("chd_categorical")
 
 val encoded = encoder.transform(data).toDF
 encoded.registerTempTable("encoded")
