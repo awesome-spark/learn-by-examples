@@ -72,7 +72,10 @@ Like any good modeling approach, building a good scoring model is a succession o
 
 We will follow these steps and solve the problem of our case study.
 
-#### Load Raw Data
+
+### Modelization
+
+#### 1. Load Raw Data
 
 Let's first load the needed libraries. We are working with Zeppelin Notebook (v.0.6.0). We will need the `spark-csv` package to read the downloaded data into a Spark `DataFrame`.
 
@@ -89,7 +92,7 @@ In a separate cell, we'll need to read the data raw first using `spark-csv` as f
 ```scala
 // I believe that you are old enough to know where you've put your downloaded
 // data and thus change to the according path
-val dataPath = "/home/eliasah/Desktop/r-snippets/heart-disease-study/data/SAheart.data.txt"
+val dataPath = "./heart-disease-study/data/SAheart.data.txt"
 val rawData = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").load(dataPath).drop("row.names")
 ```
 
@@ -129,7 +132,7 @@ or with `z.show(rawData)` :
 
 ![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawData.png)
 
-#### Exploratory Analysis
+#### 2. Exploratory Analysis
 
 Hence the data is already loaded, we can check the type of each columns by printing the schema :
 
@@ -173,13 +176,86 @@ val data = rawData
 ```scala
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.ml.feature.OneHotEncoder
+import org.apache.spark.ml.Pipeline
 
 val toVec = udf[Vector, Double] { (a) =>  Vectors.dense(a) }
 
-val encoder = new OneHotEncoder()
-                   .setInputCol("chd")
-                   .setOutputCol("chd_categorical")
+val encodeFamHist = udf[Double, String]( _ match { case "Absent" => 0.0 case "Present" => 1.0} )      
+val data = base.withColumn("famhist",encodeFamHist('famhist)).withColumn("chd",'chd.cast("Double"))
 
-val encoded = encoder.transform(data).toDF
-encoded.registerTempTable("encoded")
+val chdEncoder = new OneHotEncoder().setInputCol("chd").setOutputCol("chd_categorical")
+val famhistEncoder = new OneHotEncoder().setInputCol("famhist").setOutputCol("famhist_categorical")
+
+val pipeline = new Pipeline().setStages(Array(chdEncoder, famhistEncoder))
+
+val encoded = pipeline.fit(data).transform(data)
 ```
+
+#### 3. Search meaningful explanatory variables
+
+Attention when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
+
+Another analysis tool is to perform point cloud for all variables. One can possibly color the points according to the target variable.
+
+#### 4. Outliers and missing values
+
+Outliers depend on the distribution and most certainly the object of the study. In the literature, the treatment of missing values or outliers is sometimes subject to endless discussions which practitioners should consider. It is easier, in general, to decide what is an outlier with some domain-knowledge. Let's look again basic statistics
+
+The distribution of tobacco consumption is very spread out, as for alcohol. Other distributions seem rather consistent. So, for now, we do nothing on those values considered, a priori, as absurd given the distribution.
+
+#### 5. Discretize or not?
+
+This is a common issue in the exploratory analysis. Discretizing continuous variables.
+
+In the data set, the variables:
+
+- age
+- tobacco
+- sbp
+- alcohol
+- obesity
+- ldl
+- adiposity
+- typea
+
+are potentially discrétiser.
+
+Should we discretize continuous variables? Yes, mostly. But how? in line with the target variable? For business knowledge? Distribution based on quantiles?
+
+No definitive answer. From a general point of view the choice of method generally depends on the problem, the time you want to spend. Always remember: No cutting is good a priori and based on practical results, do not hesitate to reconsider its cutting.
+
+The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure)
+We made the choice to discretize the variables age and tobacco distinguishing between small, medium and heavy smoker.
+
+
+The category under 15 years is not at all representative in the sample. the under 25 either.
+Half of people over 45 are suffering from a heart problem.
+One can think of a form of hereditary heart problems considering genetic's crossing.
+It is clear that smoking has a real influence on heart problems, because we found a significant proportion of people,regardless of their amount of tobacco consumed.
+
+These initial analyzes indicate that:
+
+- It is not very useful to keep the sample in individuals under 15 years, because the model we develop is not calibrated to predict the likelihood of developing heart disease if age plays a role therefore.
+- Some results that we see here descriptively must be able to confirm in a modeling phase. Our baseline will be:
+
+```r
+base3 <- subset(x = base2, subset = (age > 15))
+detach(base2)
+attach(base3)
+## The following object(s) are masked _by_ '.GlobalEnv':
+##
+##     age.d, tobacco.d
+## The following object(s) are masked from 'base':
+##
+##     adiposity, age, alcohol, chd, famhist, ldl, obesity, sbp,
+##     tobacco, typea
+# On enlève dans la base de travail les variables age et tobacco
+# continues, au profit des discrétisés
+base3 <- subset(base3, select = -c(age, tobacco))
+```
+
+#### 6. Sampling : Training vs test
+#### 7. Build models
+#### 8. Modelization
+#### 9. Model validation
+#### 10. ROC
