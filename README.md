@@ -130,7 +130,7 @@ rawData.show
 
 or with `z.show(rawData)` :
 
-![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawData.png)
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZShowRawData.png)
 
 #### 2. Exploratory Analysis 
 
@@ -155,7 +155,7 @@ Note that the chd target variable was treated as a numeric variable. We will dea
 
 Let's run some summary statistics on the data (e.g `z.show(rawData.describe())`):
 
-![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawDataSummary.png)
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZShowRawDataSummary.png)
 
 #### Categorical feature encoder
 
