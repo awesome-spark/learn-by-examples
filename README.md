@@ -35,7 +35,7 @@ A retrospective sample of males in a heart-disease high-risk region of the Weste
 factors after their CHD event. In some cases the measurements were made after these treatments. These data are taken from a larger dataset, described in  Rousseauw et al, 1983, South African Medical Journal.
 
 | variable | description
-|-----| ----- |
+|-----:| -----:|
 | sbp	|	systolic blood pressure |
 | tobacco	|	cumulative tobacco (kg) |
 | ldl |	low densiity lipoprotein cholesterol |
@@ -132,7 +132,7 @@ or with `z.show(rawData)` :
 
 ![alt text](/media/eliasah/Transcend/bitbucket/scoring-heart-disease/figures/ZShowRawData.png)
 
-#### 2. Exploratory Analysis
+#### 2. Exploratory Analysis 
 
 Hence the data is already loaded, we can check the type of each columns by printing the schema :
 
