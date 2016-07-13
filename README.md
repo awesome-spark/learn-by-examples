@@ -236,7 +236,7 @@ Outliers depend on the distribution and most certainly the object of the study. 
 
 famhist and chd are both categorical variables so we will drop them from statistical description :
 
-`̀``scala
+```scala
 z.show(encoded.drop("chd").drop("famhist").describe())
 ```
 
@@ -261,41 +261,72 @@ In the data set, the variables:
 - adiposity
 - typea
 
-are potentially discrétiser.
+are potentially to discretize.
 
-Should we discretize continuous variables? Yes, mostly. But how? in line with the target variable? For business knowledge? Distribution based on quantiles?
+Should we discretize continuous variables ? Yes, mostly. But how ? in line with the target variable? For business knowledge? Distribution based on quantiles ?
 
 No definitive answer. From a general point of view the choice of method generally depends on the problem, the time you want to spend. Always remember: No cutting is good a priori and based on practical results, do not hesitate to reconsider its cutting.
 
 The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure)
+
 We made the choice to discretize the variables age and tobacco distinguishing between small, medium and heavy smoker.
 
+With Spark we can do both actions separately or using Pipeline from Spark ML (later on that in the following segment).
 
-The category under 15 years is not at all representative in the sample. the under 25 either.
+For now, we will just use the [QuantileDiscretizer](http://spark.apache.org/docs/latest/ml-features.html#quantilediscretizer) for that purpose as followed :
+
+```scala
+import org.apache.spark.sql.types.DoubleType
+
+val ageDiscretizer = new QuantileDiscretizer()
+  .setInputCol("age")
+  .setOutputCol("age_discret")
+  .setNumBuckets(4)
+
+val result = ageDiscretizer.fit(encoded.withColumn("age",$"age".cast(DoubleType))).transform(encoded.withColumn("age",$"age".cast(DoubleType)))
+z.show(result.orderBy($"age".asc))
+```
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeDiscrete.png)
+
+As you've noticed we converted our age variable into a double precision floating point format or you'll get the following error :
+
+> `scala.MatchError: [52] (of class org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema)`
+
+Which is ambiguous if you'd ask me.
+
+We will perform the same action on the tobacco variable (no need to cast here)
+
+```scala
+val tobaccoDiscretizer = new QuantileDiscretizer()
+  .setInputCol("tobacco")
+  .setOutputCol("tobacco_discret")
+  .setNumBuckets(3)
+
+val result = tobaccoDiscretizer.fit(encoded).transform(encoded)
+z.show(result.orderBy($"tobacco_discret".asc))
+```
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZTobaccoDiscrete.png)
+
+The category under 15 years is not at all representative in the sample. The under 30 either.
+
 Half of people over 45 are suffering from a heart problem.
-One can think of a form of hereditary heart problems considering genetic's crossing.
-It is clear that smoking has a real influence on heart problems, because we found a significant proportion of people,regardless of their amount of tobacco consumed.
 
-These initial analyzes indicate that:
+One can think of a form of hereditary heart problems considering genetics crossing.
+It is clear that smoking has a real influence on heart problems, because we've found a significant proportion of people, regardless of their amount of tobacco consumed.
+
+These initial analysis indicate that:
 
 - It is not very useful to keep the sample in individuals under 15 years, because the model we develop is not calibrated to predict the likelihood of developing heart disease if age plays a role therefore.
 - Some results that we see here descriptively must be able to confirm in a modeling phase. Our baseline will be:
 
-```r
-base3 <- subset(x = base2, subset = (age > 15))
-detach(base2)
-attach(base3)
-## The following object(s) are masked _by_ '.GlobalEnv':
-##
-##     age.d, tobacco.d
-## The following object(s) are masked from 'base':
-##
-##     adiposity, age, alcohol, chd, famhist, ldl, obesity, sbp,
-##     tobacco, typea
-# On enlève dans la base de travail les variables age et tobacco
-# continues, au profit des discrétisés
-base3 <- subset(base3, select = -c(age, tobacco))
+```scala
+val baseline = step2.filter($"age">15).drop("age").drop("tobacco").drop("chd").drop("famhist")
+z.show(baseline)
 ```
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZBaseline.png)
 
 #### 6. Sampling : Training vs test
 #### 7. Build models
