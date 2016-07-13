@@ -207,13 +207,18 @@ We will use the histogram view available.
 ![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistMess.png)
 
 This is still meaningless. We can open the visualization settings to choose what *Keys*, *Groups* and *Values* we would want to display.
-For the age variable, we will choose the age as a key, chd as for groups and count (sum) for values.
+For the age variable, we will choose the age as a key, chd (target variable) as for groups and count(sum) for values.
 
 ![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistFinal.png)
 
+Now let's do the same for sbp, alcohol, tobacco, ldl and obesity :
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZHist1.png)
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZHist2.png)
 
 
-Attention when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
+You should be careful when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
 
 Another analysis tool is to perform point cloud for all variables. One can possibly color the points according to the target variable.
 
