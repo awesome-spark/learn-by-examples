@@ -220,7 +220,15 @@ Now let's do the same for sbp, alcohol, tobacco, ldl and obesity :
 
 You should be careful when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
 
-Another analysis tool is to perform point cloud for all variables. One can possibly color the points according to the target variable.
+Another analysis tool is to perform point cloud for all variables. One can possibly color the points according to the target variable. I use seaborn with some helper visualization scripts to support such plotting. The scripts are available on the [project github page](https://github.com/awesome-spark/scoring-heart-disease) under [notebooks](https://github.com/awesome-spark/scoring-heart-disease/tree/master/notebooks).
+
+##### Pair plot :
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZSeabornPairplot.png)
+
+##### Qplot :
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZSeabornQplot.png)
 
 #### 4. Outliers and missing values
 
