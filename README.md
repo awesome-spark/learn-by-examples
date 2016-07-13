@@ -232,9 +232,19 @@ Another analysis tool is to perform point cloud for all variables. One can possi
 
 #### 4. Outliers and missing values
 
-Outliers depend on the distribution and most certainly the object of the study. In the literature, the treatment of missing values or outliers is sometimes subject to endless discussions which practitioners should consider. It is easier, in general, to decide what is an outlier with some domain-knowledge. Let's look again basic statistics
+Outliers depend on the distribution and most certainly the object of the study. In literature, the treatment of missing values or outliers is sometimes subject to endless discussions which practitioners should consider. It is easier, in general, to decide what is an outlier with some domain-knowledge. Let's look again basic statistics :
+
+famhist and chd are both categorical variables so we will drop them from statistical description :
+
+`̀``scala
+z.show(encoded.drop("chd").drop("famhist").describe())
+```
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZEncodedStats.png)
 
 The distribution of tobacco consumption is very spread out, as for alcohol. Other distributions seem rather consistent. So, for now, we do nothing on those values considered, a priori, as absurd given the distribution.
+
+This data set doesn't contain missing values nor visible outliers.
 
 #### 5. Discretize or not?
 
