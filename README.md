@@ -132,7 +132,7 @@ or with `z.show(rawData)` :
 
 ![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZShowRawData.png)
 
-#### 2. Exploratory Analysis 
+#### 2. Exploratory Analysis
 
 Hence the data is already loaded, we can check the type of each columns by printing the schema :
 
@@ -192,6 +192,26 @@ val encoded = pipeline.fit(data).transform(data)
 ```
 
 #### 3. Search meaningful explanatory variables
+
+Ok, so now we will try to identify possible correlations between descriptors. Let's take a quick look at our age variable :
+
+```scala
+z.show(encoded.groupBy('age,'chd).count.orderBy('age))
+```
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeTable.png)
+
+This is a bit hard to read. So now we can use Zeppelin plotting functionalities to help us take a better look at our variable.
+
+We will use the histogram view available.
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistMess.png)
+
+This is still meaningless. We can open the visualization settings to choose what *Keys*, *Groups* and *Values* we would want to display.
+For the age variable, we will choose the age as a key, chd as for groups and count (sum) for values.
+
+![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistFinal.png)
+
+
 
 Attention when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
 
