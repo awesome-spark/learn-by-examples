@@ -267,7 +267,7 @@ Should we discretize continuous variables ? Yes, mostly. But how ? in line with 
 
 No definitive answer. From a general point of view the choice of method generally depends on the problem, the time you want to spend. Always remember: No cutting is good a priori and based on practical results, do not hesitate to reconsider its cutting.
 
-The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure)
+The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure).
 
 We made the choice to discretize the variables age and tobacco distinguishing between small, medium and heavy smoker.
 
@@ -329,7 +329,47 @@ z.show(baseline)
 ![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZBaseline.png)
 
 #### 6. Sampling : Training vs test
-#### 7. Build models
+
+Now we will be splitting our data into a training and test sets in order to feed the sets to the model that we will build in the next section.
+
+We will use the RFormula transformer to specify the features that we will need to build our model and then split the newly created `DataFrame` to split. This is quite straightforward as you see in the following code : [More on RFormula [here](http://spark.apache.org/docs/latest/ml-features.html#rformula).]
+
+```scala
+import org.apache.spark.ml.feature.RFormula
+
+val formula = new RFormula()
+  .setFormula("chd ~ sbp + famhist_categorical + alcohol + obesity + ldl + adiposity + typea + age_discret + tobacco_discret")
+  .setFeaturesCol("features")
+  .setLabelCol("label")
+
+val baseline2 = formula.fit(baseline).transform(baseline).select("label","features")
+
+val splits = baseline2.randomSplit(Array(0.7,0.3))
+val training = splits(0)
+val test = splits(1)
+```
+
+The data that we are working on here is quite simple to manipulate but sometimes for some (valid) reasons you'll need to perform stratified sampling over your data. I'll not be discussing this point in this post, but you can read more about it in my answer about [Stratified sampling in Spark on Stackoverflow](http://stackoverflow.com/a/32241887/3415409).
+
+#### 7. Build models [WIP]
+
+Once the data split into a training and test set, we can start with defining a basic logistic regression on the data as followed :
+
+```scala
+import org.apache.spark.ml.classification.LogisticRegression
+
+val lr = new LogisticRegression()
+  .setMaxIter(200) // maximum number of iterations.
+  .setRegParam(0.1) // regulation parameter
+  .setElasticNetParam(0.8) // ElasticNet mixing parameter, the penalty is a combination of L1 and L2.
+
+// Fit the model
+val lrModel = lr.fit(training)
+
+// Print the coefficients and intercept for logistic regression
+z.show(s"%html Coefficients: ${lrModel.coefficients} </br> Intercept: ${lrModel.intercept}")
+```
+
 #### 8. Modelization
 #### 9. Model validation
 #### 10. ROC
