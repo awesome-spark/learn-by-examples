@@ -155,7 +155,7 @@ Note that the chd target variable was treated as a numeric variable. We will dea
 
 Let's run some summary statistics on the data (e.g `z.show(rawData.describe())`):
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/scoring-heart-disease/blob/master/figures/ZShowRawDataSummary.png)
+![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures//ZShowRawDataSummary.png)
 
 #### Categorical feature encoder
 
