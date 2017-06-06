@@ -29,7 +29,7 @@ We are interested in our case study in a database containing data about 462 pati
 
 The data is available [here](http://statweb.stanford.edu/~tibs/ElemStatLearn/) under the tab Data > South African Heart Disease.
 
-#### Data Description
+#### Data Description
 
 A retrospective sample of males in a heart-disease high-risk region of the Western Cape, South Africa. There are roughly two controls per case of CHD. Many of the CHD positive men have undergone blood pressure reduction treatment and other programs to reduce their risk
 factors after their CHD event. In some cases the measurements were made after these treatments. These data are taken from a larger dataset, described in  Rousseauw et al, 1983, South African Medical Journal.
@@ -49,7 +49,7 @@ factors after their CHD event. In some cases the measurements were made after th
 
 For our study case, we will be interested in that last variable `chd`.
 
-### Model Definition
+### Model Definition
 
 We aim to determine the probability of a given heart disease observations on 462 patients such as chd = f (obesity, age, family history, etc ...)
 
@@ -59,7 +59,7 @@ We aim to determine the probability of a given heart disease observations on 462
 
 So back to our example ! This example illustrates  how to use logistic regression on health data. The problem formulation is generally the same, it can be for an insurance company to determine the risk factors to provision (pricing) determine the profiles of palatable customers a new commercial offer, and also in macroeconomics, this approach is used to quantify country risk.
 
-#### Modeling approach
+#### Modeling approach
 
 Like any good modeling approach, building a good scoring model is a succession of more or less basic steps based practitioners. Nevertheless they all agree more or less to respect the following:
 
@@ -75,7 +75,7 @@ We will follow these steps and solve the problem of our case study.
 
 ### Modelization
 
-#### 1. Load Raw Data
+#### 1. Load Raw Data
 
 Let's first load the needed libraries. We are working with Zeppelin Notebook (v.0.6.0). We will need the `spark-csv` package to read the downloaded data into a Spark `DataFrame`.
 
@@ -130,9 +130,9 @@ rawData.show
 
 or with `z.show(rawData)` :
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZShowRawData.png)
+![alt text](./figures/ZShowRawData.png?raw=true)
 
-#### 2. Exploratory Analysis
+#### 2. Exploratory Analysis
 
 Hence the data is already loaded, we can check the type of each columns by printing the schema :
 
@@ -155,7 +155,7 @@ Note that the chd target variable was treated as a numeric variable. We will dea
 
 Let's run some summary statistics on the data (e.g `z.show(rawData.describe())`):
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZShowRawDataSummary.png)
+![alt text](./figures/ZShowRawDataSummary.png?raw=true)
 
 #### Categorical feature encoder
 
@@ -191,31 +191,31 @@ val pipeline = new Pipeline().setStages(Array(chdEncoder, famhistEncoder))
 val encoded = pipeline.fit(data).transform(data)
 ```
 
-#### 3. Search meaningful explanatory variables
+#### 3. Search meaningful explanatory variables
 
 Ok, so now we will try to identify possible correlations between descriptors. Let's take a quick look at our age variable :
 
 ```scala
 z.show(encoded.groupBy('age,'chd).count.orderBy('age))
 ```
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeTable.png)
+![alt text](./figures/ZAgeTable.png?raw=true)
 
 This is a bit hard to read. So now we can use Zeppelin plotting functionalities to help us take a better look at our variable.
 
 We will use the histogram view available.
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistMess.png)
+![alt text](./figures/ZAgeHistMess.png?raw=true)
 
 This is still meaningless. We can open the visualization settings to choose what *Keys*, *Groups* and *Values* we would want to display.
 For the age variable, we will choose the age as a key, chd (target variable) as for groups and count(sum) for values.
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeHistFinal.png)
+![alt text](./figures/ZAgeHistFinal.png?raw=true)
 
 Now let's do the same for sbp, alcohol, tobacco, ldl and obesity :
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZHist1.png)
+![alt text](./figures/ZHist1.png?raw=true)
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZHist2.png)
+![alt text](./figures/ZHist2.png?raw=true)
 
 
 You should be careful when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
@@ -224,11 +224,11 @@ Another analysis tool is to perform point cloud for all variables. One can possi
 
 ##### Pair plot :
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZSeabornPairplot.png)
+![alt text](./figures/ZSeabornPairplot.png?raw=true)
 
 ##### Qplot :
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZSeabornQplot.png)
+![alt text](./figures/ZSeabornQplot.png?raw=true)
 
 #### 4. Outliers and missing values
 
@@ -240,13 +240,13 @@ famhist and chd are both categorical variables so we will drop them from statist
 z.show(encoded.drop("chd").drop("famhist").describe())
 ```
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZEncodedStats.png)
+![alt text](./figures/ZEncodedStats.png?raw=true)
 
 The distribution of tobacco consumption is very spread out, as for alcohol. Other distributions seem rather consistent. So, for now, we do nothing on those values considered, a priori, as absurd given the distribution.
 
 This data set doesn't contain missing values nor visible outliers.
 
-#### 5. Discretize or not?
+#### 5. Discretize or not?
 
 This is a common issue in the exploratory analysis. Discretizing continuous variables.
 
@@ -267,7 +267,7 @@ Should we discretize continuous variables ? Yes, mostly. But how ? in line with 
 
 No definitive answer. From a general point of view the choice of method generally depends on the problem, the time you want to spend. Always remember: No cutting is good a priori and based on practical results, do not hesitate to reconsider its cutting.
 
-The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure)
+The variable age is the simplest generally to discretize. Heart problems do not affect in the same way according to age, as shown [here](https://en.wikipedia.org/wiki/Heart_failure).
 
 We made the choice to discretize the variables age and tobacco distinguishing between small, medium and heavy smoker.
 
@@ -287,7 +287,7 @@ val result = ageDiscretizer.fit(encoded.withColumn("age",$"age".cast(DoubleType)
 z.show(result.orderBy($"age".asc))
 ```
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZAgeDiscrete.png)
+![alt text](./figures/ZAgeDiscrete.png?raw=true)
 
 As you've noticed we converted our age variable into a double precision floating point format or you'll get the following error :
 
@@ -307,7 +307,7 @@ val result = tobaccoDiscretizer.fit(encoded).transform(encoded)
 z.show(result.orderBy($"tobacco_discret".asc))
 ```
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZTobaccoDiscrete.png)
+![alt text](./figures/ZTobaccoDiscrete.png?raw=true)
 
 The category under 15 years is not at all representative in the sample. The under 30 either.
 
@@ -326,10 +326,50 @@ val baseline = step2.filter($"age">15).drop("age").drop("tobacco").drop("chd").d
 z.show(baseline)
 ```
 
-![alt text](https://github.com/awesome-spark/scoring-heart-disease/blob/master/figures/ZBaseline.png)
+![alt text](./figures/ZBaseline.png?raw=true)
 
-#### 6. Sampling : Training vs test
-#### 7. Build models
-#### 8. Modelization
-#### 9. Model validation
-#### 10. ROC
+#### 6. Sampling : Training vs test
+
+Now we will be splitting our data into a training and test sets in order to feed the sets to the model that we will build in the next section.
+
+We will use the RFormula transformer to specify the features that we will need to build our model and then split the newly created `DataFrame` to split. This is quite straightforward as you see in the following code : [More on RFormula [here](http://spark.apache.org/docs/latest/ml-features.html#rformula).]
+
+```scala
+import org.apache.spark.ml.feature.RFormula
+
+val formula = new RFormula()
+  .setFormula("chd ~ sbp + famhist_categorical + alcohol + obesity + ldl + adiposity + typea + age_discret + tobacco_discret")
+  .setFeaturesCol("features")
+  .setLabelCol("label")
+
+val baseline2 = formula.fit(baseline).transform(baseline).select("label","features")
+
+val splits = baseline2.randomSplit(Array(0.7,0.3))
+val training = splits(0)
+val test = splits(1)
+```
+
+The data that we are working on here is quite simple to manipulate but sometimes for some (valid) reasons you'll need to perform stratified sampling over your data. I'll not be discussing this point in this post, but you can read more about it in my answer about [Stratified sampling in Spark on Stackoverflow](http://stackoverflow.com/a/32241887/3415409).
+
+#### 7. Build models [WIP]
+
+Once the data split into a training and test set, we can start with defining a basic logistic regression on the data as followed :
+
+```scala
+import org.apache.spark.ml.classification.LogisticRegression
+
+val lr = new LogisticRegression()
+  .setMaxIter(200) // maximum number of iterations.
+  .setRegParam(0.1) // regulation parameter
+  .setElasticNetParam(0.8) // ElasticNet mixing parameter, the penalty is a combination of L1 and L2.
+
+// Fit the model
+val lrModel = lr.fit(training)
+
+// Print the coefficients and intercept for logistic regression
+z.show(s"%html Coefficients: ${lrModel.coefficients} </br> Intercept: ${lrModel.intercept}")
+```
+
+#### 8. Modelization
+#### 9. Model validation
+#### 10. ROC
