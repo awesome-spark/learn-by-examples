@@ -130,7 +130,7 @@ rawData.show
 
 or with `z.show(rawData)` :
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZShowRawData.png)
+![alt text](./figures/ZShowRawData.png?raw=true)
 
 #### 2. Exploratory Analysis
 
@@ -155,7 +155,7 @@ Note that the chd target variable was treated as a numeric variable. We will dea
 
 Let's run some summary statistics on the data (e.g `z.show(rawData.describe())`):
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures//ZShowRawDataSummary.png)
+![alt text](./figures/ZShowRawDataSummary.png?raw=true)
 
 #### Categorical feature encoder
 
@@ -198,24 +198,24 @@ Ok, so now we will try to identify possible correlations between descriptors. Le
 ```scala
 z.show(encoded.groupBy('age,'chd).count.orderBy('age))
 ```
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZAgeTable.png)
+![alt text](./figures/ZAgeTable.png?raw=true)
 
 This is a bit hard to read. So now we can use Zeppelin plotting functionalities to help us take a better look at our variable.
 
 We will use the histogram view available.
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZAgeHistMess.png)
+![alt text](./figures/ZAgeHistMess.png?raw=true)
 
 This is still meaningless. We can open the visualization settings to choose what *Keys*, *Groups* and *Values* we would want to display.
 For the age variable, we will choose the age as a key, chd (target variable) as for groups and count(sum) for values.
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZAgeHistFinal.png)
+![alt text](./figures/ZAgeHistFinal.png?raw=true)
 
 Now let's do the same for sbp, alcohol, tobacco, ldl and obesity :
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZHist1.png)
+![alt text](./figures/ZHist1.png?raw=true)
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZHist2.png)
+![alt text](./figures/ZHist2.png?raw=true)
 
 
 You should be careful when conducting a graph analysis is for the purpose of detecting possible colinearities, or at least to have some ideas. The variables to consumption of alcohol and the quantity of tobacco seem to be distributed in the same way, as well as cholesterol and obesity.
@@ -224,11 +224,11 @@ Another analysis tool is to perform point cloud for all variables. One can possi
 
 ##### Pair plot :
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZSeabornPairplot.png)
+![alt text](./figures/ZSeabornPairplot.png?raw=true)
 
 ##### Qplot :
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZSeabornQplot.png)
+![alt text](./figures/ZSeabornQplot.png?raw=true)
 
 #### 4. Outliers and missing values
 
@@ -240,7 +240,7 @@ famhist and chd are both categorical variables so we will drop them from statist
 z.show(encoded.drop("chd").drop("famhist").describe())
 ```
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZEncodedStats.png)
+![alt text](./figures/ZEncodedStats.png?raw=true)
 
 The distribution of tobacco consumption is very spread out, as for alcohol. Other distributions seem rather consistent. So, for now, we do nothing on those values considered, a priori, as absurd given the distribution.
 
@@ -287,7 +287,7 @@ val result = ageDiscretizer.fit(encoded.withColumn("age",$"age".cast(DoubleType)
 z.show(result.orderBy($"age".asc))
 ```
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZAgeDiscrete.png)
+![alt text](./figures/ZAgeDiscrete.png?raw=true)
 
 As you've noticed we converted our age variable into a double precision floating point format or you'll get the following error :
 
@@ -307,7 +307,7 @@ val result = tobaccoDiscretizer.fit(encoded).transform(encoded)
 z.show(result.orderBy($"tobacco_discret".asc))
 ```
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZTobaccoDiscrete.png)
+![alt text](./figures/ZTobaccoDiscrete.png?raw=true)
 
 The category under 15 years is not at all representative in the sample. The under 30 either.
 
@@ -326,7 +326,7 @@ val baseline = step2.filter($"age">15).drop("age").drop("tobacco").drop("chd").d
 z.show(baseline)
 ```
 
-![alt text](https://github.com/awesome-spark/learn-by-examples/blob/master/scoring-heart-disease/figures/ZBaseline.png)
+![alt text](./figures/ZBaseline.png?raw=true)
 
 #### 6. Sampling : Training vs test
 
